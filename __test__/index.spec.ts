@@ -1,8 +1,19 @@
 import test from 'ava'
 
-import { plus100 } from '../index.js'
+import { gitStatus, gitStatusWithFetch } from '../index.js'
 
-test('sync function from native code', (t) => {
-  const fixture = 42
-  t.is(plus100(fixture), fixture + 100)
+const modules: string[] = []
+test('sync function from native code', async (t) => {
+  const dirs = modules.map((m) => `/Users/jaskang/Documents/codes/wesure-miniapp/${m.path}`)
+  const start = Date.now()
+  await gitStatus(dirs)
+    .then((results) => {
+      console.log('lines:', results)
+      const end = Date.now()
+      console.log(`gitStatusWithFetch took ${end - start} ms`)
+    })
+    .catch((error) => {
+      console.error('error:', error)
+      t.fail('Expected the command to succeed, but it failed.')
+    })
 })
