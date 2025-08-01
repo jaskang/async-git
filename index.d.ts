@@ -11,6 +11,16 @@ export interface BranchStatus {
   untracked: number
 }
 
+export declare function checkout(dirs: Array<string>, branch: string, limit?: number | undefined | null): Promise<Array<Error | string>>
+
+export declare function clone(repos: Array<CloneItem>, limit?: number | undefined | null): Promise<Array<Error | string>>
+
+export interface CloneItem {
+  url: string
+  path: string
+  branch?: string
+}
+
 export declare function gitStatus(dirs: Array<string>, limit?: number | undefined | null): Promise<Array<Error | BranchStatus>>
 
 export declare function gitStatusWithFetch(dirs: Array<string>, limit?: number | undefined | null): Promise<Array<Error | BranchStatus>>

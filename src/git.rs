@@ -1,4 +1,4 @@
-use git2::{Branch, Repository, Status, StatusOptions};
+use git2::{Branch, Repository, Status};
 use napi::Error;
 use napi_derive::napi;
 
@@ -145,75 +145,74 @@ pub fn status(repo: &Repository, root: &str) -> Result<BranchStatus, Error> {
   Ok(branch_status)
 }
 
-pub fn clone(url: &str, path: &str) -> Result<Repository, String> {
-  // use libgit crate to clone the repository
-  let repo = Repository::clone(url, path).map_err(|e| e.message().to_string())?;
+pub fn clone(url: &str, path: &str, branch: Option<&str>) -> Result<Repository, String> {
+  // 检查目标路径是否存在
+  if std::path::Path::new(path).exists() {
+    return Err(format!("Path '{}' already exists", path));
+  }
+
+  let repo = if let Some(branch) = branch {
+    // 使用 RepoBuilder 直接指定分支克隆
+    let mut builder = git2::build::RepoBuilder::new();
+    builder.branch(branch);
+    builder
+      .clone(url, std::path::Path::new(path))
+      .map_err(|e| e.message().to_string())?
+  } else {
+    // 默认克隆
+    Repository::clone(url, path).map_err(|e| e.message().to_string())?
+  };
+
   Ok(repo)
 }
 
 /**
- * 切换当前分支到指定的分支
- * @param repo: git2::Repository
- * @param branch: 分支名称
- * @return Result<String, String>: 返回切换后的分支名称或错误信息
+ * 切换到指定分支
+ * 如果分支不存在，则尝试从远程分支创建
+ * 如果远程分支也不存在，则返回错误
  */
 pub fn checkout(repo: &Repository, branch: &str) -> Result<String, String> {
-  // 首先检查分支是否存在
-  let branch_exists = repo.find_branch(branch, git2::BranchType::Local).is_ok();
-
-  let remote_branch_exists = repo
-    .find_branch(&format!("origin/{}", branch), git2::BranchType::Remote)
-    .is_ok();
-
-  if !branch_exists && !remote_branch_exists {
-    return Err(format!("Branch '{}' not found", branch));
+  // 尝试本地分支
+  if let Ok(local_branch) = repo.find_branch(branch, git2::BranchType::Local) {
+    let reference = local_branch.get();
+    repo
+      .set_head(reference.name().unwrap())
+      .map_err(|e| e.message().to_string())?;
+    repo
+      .checkout_head(Some(git2::build::CheckoutBuilder::default().force()))
+      .map_err(|e| e.message().to_string())?;
+    return Ok(branch.to_string());
   }
 
-  // 如果本地分支不存在但远程分支存在，先创建本地分支
-  if !branch_exists && remote_branch_exists {
-    let remote_branch = repo
-      .find_branch(&format!("origin/{}", branch), git2::BranchType::Remote)
-      .map_err(|e| format!("Failed to find remote branch: {}", e.message()))?;
-
+  // 尝试从远程分支创建并切换
+  let remote_branch_name = format!("origin/{}", branch);
+  if let Ok(remote_branch) = repo.find_branch(&remote_branch_name, git2::BranchType::Remote) {
     let commit = remote_branch
       .get()
-      .target()
-      .ok_or("Remote branch has no target")?;
+      .peel_to_commit()
+      .map_err(|e| e.message().to_string())?;
 
-    let commit = repo
-      .find_commit(commit)
-      .map_err(|e| format!("Failed to find commit: {}", e.message()))?;
-
-    repo
+    // 创建本地分支
+    let mut local_branch = repo
       .branch(branch, &commit, false)
-      .map_err(|e| format!("Failed to create local branch: {}", e.message()))?;
+      .map_err(|e| e.message().to_string())?;
+
+    // 设置上游分支
+    local_branch
+      .set_upstream(Some(&remote_branch_name))
+      .map_err(|e| e.message().to_string())?;
+
+    // 切换到新创建的分支
+    let reference = local_branch.get();
+    repo
+      .set_head(reference.name().unwrap())
+      .map_err(|e| e.message().to_string())?;
+    repo
+      .checkout_head(Some(git2::build::CheckoutBuilder::default().force()))
+      .map_err(|e| e.message().to_string())?;
+
+    return Ok(branch.to_string());
   }
 
-  // 执行 checkout 操作
-  let treeish = repo
-    .revparse_single(branch)
-    .map_err(|e| format!("Failed to parse branch '{}': {}", branch, e.message()))?;
-
-  repo
-    .checkout_tree(&treeish, None)
-    .map_err(|e| format!("Failed to checkout tree: {}", e.message()))?;
-
-  // 如果是本地分支，设置 HEAD 指向该分支
-  if branch_exists {
-    let branch_ref = repo
-      .find_branch(branch, git2::BranchType::Local)
-      .map_err(|e| format!("Failed to find local branch: {}", e.message()))?;
-
-    repo
-      .set_head(branch_ref.get().name().unwrap())
-      .map_err(|e| format!("Failed to set HEAD: {}", e.message()))?;
-  } else {
-    // 如果是新创建的本地分支，设置 HEAD 指向它
-    repo
-      .set_head(&format!("refs/heads/{}", branch))
-      .map_err(|e| format!("Failed to set HEAD: {}", e.message()))?;
-  }
-
-  // 返回切换后的分支名称
-  Ok(branch.to_string())
+  Err(format!("Branch '{}' not found locally or remotely", branch))
 }

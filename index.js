@@ -393,5 +393,7 @@ if (!nativeBinding) {
 }
 
 module.exports = nativeBinding
+module.exports.checkout = nativeBinding.checkout
+module.exports.clone = nativeBinding.clone
 module.exports.gitStatus = nativeBinding.gitStatus
 module.exports.gitStatusWithFetch = nativeBinding.gitStatusWithFetch
