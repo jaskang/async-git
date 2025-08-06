@@ -15,7 +15,7 @@ chrono = "0.4"
 
 [dependencies.git2]
 version = "0.20.2"
-features = ["vendored-openssl", "vendored-libgit2"]
+features = ["vendored-openssl"]
 
 [dependencies.napi]
 version = "3.0.0"
