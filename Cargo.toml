@@ -1,6 +1,6 @@
 
 [package]
-authors = ["LongYinan <lynweklm@gmail.com>"]
+authors = ["jaskang <jaskang@qq.com>"]
 edition = "2021"
 name = "async_git"
 version = "0.1.0"
