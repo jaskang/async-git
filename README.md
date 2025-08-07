@@ -17,7 +17,7 @@
 pnpm add @napi-rs/package-template
 ```
 
-## Usage
+## Ussage
 
 ### Build
 
