@@ -2,7 +2,7 @@
 [package]
 authors = ["jaskang <jaskang@qq.com>"]
 edition = "2021"
-name    = "napi_utils_git"
+name    = "jnapi_async_git"
 version = "0.1.0"
 
 [lib]
