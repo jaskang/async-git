@@ -38,6 +38,9 @@ jobs:
           - host: ubuntu-latest
             target: x86_64-unknown-linux-gnu
             build: pnpm build --target x86_64-unknown-linux-gnu --use-napi-cross
+            setup: |
+              export LIBZ_SYS_STATIC=1
+              export PKG_CONFIG_ALLOW_CROSS=1
           - host: ubuntu-latest
             target: x86_64-unknown-linux-musl
             build: pnpm build --target x86_64-unknown-linux-musl -x
@@ -47,6 +50,9 @@ jobs:
           - host: ubuntu-latest
             target: aarch64-unknown-linux-gnu
             build: pnpm build --target aarch64-unknown-linux-gnu --use-napi-cross
+            setup: |
+              export LIBZ_SYS_STATIC=1
+              export PKG_CONFIG_ALLOW_CROSS=1
           - host: ubuntu-latest
             target: aarch64-unknown-linux-musl
             build: pnpm build --target aarch64-unknown-linux-musl -x
@@ -107,6 +113,9 @@ jobs:
       - name: Build
         run: ${{ matrix.settings.build }}
         shell: bash
+        env:
+          LIBZ_SYS_STATIC: ${{ contains(matrix.settings.target, 'linux-gnu') && '1' || '' }}
+          PKG_CONFIG_ALLOW_CROSS: ${{ contains(matrix.settings.target, 'linux-gnu') && '1' || '' }}
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         if: matrix.settings.target != 'wasm32-wasip1-threads'
