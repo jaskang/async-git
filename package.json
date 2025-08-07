@@ -1,5 +1,5 @@
 {
-  "name": "asyncgit",
+  "name": "async-git",
   "version": "1.1.1",
   "description": "Template project for writing node package with napi-rs",
   "main": "index.js",
@@ -24,7 +24,7 @@
     "browser.js"
   ],
   "napi": {
-    "binaryName": "asyncgit",
+    "binaryName": "async_git_binding",
     "targets": [
       "x86_64-apple-darwin",
       "aarch64-apple-darwin",
