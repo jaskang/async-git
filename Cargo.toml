@@ -2,7 +2,7 @@
 [package]
 authors = ["jaskang <jaskang@qq.com>"]
 edition = "2021"
-name    = "async_git"
+name    = "napi_utils_git"
 version = "0.1.0"
 
 [lib]
@@ -11,10 +11,19 @@ crate-type = ["cdylib"]
 [dependencies]
 chrono      = "0.4.41"
 futures     = "0.3.31"
-git2        = { version = "0.20.2", features = ["vendored-openssl"] }
-napi        = { version = "3.0.0", features = ["async"] }
 napi-derive = "3.0.0"
-tokio       = { version = "1.47.1", features = ["full"] }
+
+  [dependencies.git2]
+  features = ["vendored-openssl"]
+  version  = "0.20.2"
+
+  [dependencies.napi]
+  features = ["async"]
+  version  = "3.0.0"
+
+  [dependencies.tokio]
+  features = ["full"]
+  version  = "1.47.1"
 
 [build-dependencies]
 napi-build = "2"
