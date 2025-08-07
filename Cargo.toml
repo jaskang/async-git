@@ -2,37 +2,23 @@
 [package]
 authors = ["jaskang <jaskang@qq.com>"]
 edition = "2021"
-name = "async_git_binding"
+name    = "async_git"
 version = "0.1.0"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-futures = "0.3.31"
-napi-derive = "3.1.2"
-chrono = "0.4"
-
-[dependencies.git2]
-version = "0.20.2"
-features = ["vendored-openssl","vendored-libgit2"]
-
-[dependencies.libz-sys]
-version = "1.1"
-features = ["static"]
-
-[dependencies.napi]
-version = "3.1.6"
-features = ["async"]
-
-[dependencies.tokio]
-version = "1.47.0"
-features = ["full"]
+chrono      = "0.4.41"
+futures     = "0.3.31"
+git2        = { version = "0.20.2", features = ["vendored-openssl"] }
+napi        = { version = "3.0.0", features = ["async"] }
+napi-derive = "3.0.0"
+tokio       = { version = "1.47.1", features = ["full"] }
 
 [build-dependencies]
-napi-build = "2.2.3"
+napi-build = "2"
 
 [profile.release]
-lto = true
-codegen-units = 1
+lto   = true
 strip = "symbols"

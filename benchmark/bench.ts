@@ -6,16 +6,16 @@ function add(a: number) {
   return a + 100
 }
 
-const bench = new Bench()
+const b = new Bench()
 
-bench.add('Native a + 100', () => {
+b.add('Native a + 100', () => {
   plus100(10)
 })
 
-bench.add('JavaScript a + 100', () => {
+b.add('JavaScript a + 100', () => {
   add(10)
 })
 
-await bench.run()
+await b.run()
 
-console.table(bench.table())
+console.table(b.table())
