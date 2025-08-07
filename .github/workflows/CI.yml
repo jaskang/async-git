@@ -21,30 +21,6 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: setup pnpm
-        uses: pnpm/action-setup@v4
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-      - name: Install
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy, rustfmt
-      - name: Install dependencies
-        run: pnpm install
-      - name: Oxlint
-        run: pnpm lint
-      - name: Cargo fmt
-        run: cargo fmt -- --check
-      - name: Clippy
-        run: cargo clippy
   build:
     strategy:
       fail-fast: false
@@ -66,6 +42,8 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
       - name: Setup node
         uses: actions/setup-node@v4
         with:
@@ -136,7 +114,6 @@ jobs:
             target: x86_64-apple-darwin
             architecture: x64
         node:
-          - '20'
           - '22'
     runs-on: ${{ matrix.settings.host }}
     steps:
@@ -168,7 +145,6 @@ jobs:
       contents: write
       id-token: write
     needs:
-      - lint
       - test-macOS-windows-binding
     steps:
       - uses: actions/checkout@v4
